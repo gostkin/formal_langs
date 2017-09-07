@@ -1,0 +1,144 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[a4paper, left=20mm, right=20mm, top=30mm, bottom=20mm]{geometry}
+\usepackage{amsmath,amsfonts,amssymb,amsthm,epsfig,epstopdf,titling,url,array}
+\usepackage[T2A]{fontenc}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{xparse}
+\usepackage[shortlabels]{enumitem}
+
+
+\theoremstyle{definition}
+\newtheorem{task}{Задача}[section]
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Теорема}[section]
+\newtheorem{lemma}{Лемма}[section]
+\newtheorem{preposition}{Предложение}[section]
+\newtheorem*{corollary}{Следствие}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Определение}[section]
+\newtheorem{example}{Пример}[section]
+
+
+\title{\textbf{Теория формальных языков}}
+\author{Госткин Евгений Михайлович\\группа 695}
+\date{\today}
+\begin{document}
+\setlength{\parindent}{1cm}
+\maketitle
+\tableofcontents
+\newpage
+\chapter{Конечные автоматы}
+\section{Введение}
+\definition{$\Sigma = \{a_1, \ldots, a_n\}$ - алфавит.}
+\definition{$\omega\in\Sigma^*$ - слово.}
+\definition{$L\subset\Sigma^*$ - язык (множество слов).}
+\definition{$"\cdot"$ - конкатенация, работает для слов и для языков, $ab \cdot ca = abca$, $L_1~\cdot~L_2~=~\{w_1w_2 | w_1\in L_1, w_2 \in L_2\}$.}
+\definition{Степень языка: $L^0 = \{\varepsilon\}, L^1 = L, L^k = \underbrace{L\cdot\ldots\cdot L}_{\text{k раз}}$.}
+\definition{Замыкание Клини - $L^* = \bigcup_{k=0}^{\infty}L^k$.}
+\section{Конечный автомат}
+\definition{Конечный автомат - $M:= \langle Q, \Sigma, \Delta, q_0, F\rangle$.}
+\begin{enumerate}
+\item{$Q$ - конечное множество, $q \in Q$ - состояния}
+\item{$\Sigma$ - алфавит, $|\Sigma| < \infty$}
+\item{$\Delta$ - переход, $\Delta\subseteq Q\times\Sigma^*\times Q$, $\langle q_1, u\rangle\rightarrow q_2$}
+\item{$q_0\in Q$ - стартовое состояние}
+\item{$F\subseteq Q$ - завершающие состояния}
+\end{enumerate}
+\definition{$\langle q, u\rangle : q\in Q, u \in \Sigma^k$ - конфигурация конечного автомата.}
+\definition{Отношение перехода $\vdash_M$ - наименьшее транзитивное рефлекисвное отношение, согласованное с операциями $(\langle q_1, u\rangle\rightarrow q)\in \Delta\implies \langle q_1, u\omega\rangle\vdash_M \langle q_2, \omega\rangle$.}
+\definition{$L(M) = \{\omega | \exists q \in F : \langle q_0, \omega\rangle \vdash_M \langle q, \varepsilon\rangle\}$ - язык, задаваемый автоматом.}
+\definition{Автоматный язык - язык, задаваемый автоматом.}
+\preposition{\label{oneletterway}Любой автоматный язык распознается автоматом с неболее чем однобуквенными переходами.}\newline
+$\blacktriangle$ Пусть $\exists u \in \Sigma^*, k:= |u|, 1 < k < \infty$ и $\exists q_1, q_2: (\langle q_1, u \rangle\rightarrow q_2)\in \Delta$. Запишем $u$ в виде $u_1\cdot\ldots\cdot u_k$, где $u_i \in \Sigma$ для $i\in\{1, \ldots, k\}$. Введем новые состояния 
+$q_1^\prime, \ldots, q_{k-1}^\prime$ и добавим соответствующие переходы в $\Delta$, удалив прямой переход $(\langle q_1, u \rangle\rightarrow q_2)\in \Delta$, так, чтобы:
+\[ \langle q_1, u_1\cdot\ldots\cdot u_k\omega \rangle\vdash_M \langle q_1^\prime, u_2\cdot\ldots\cdot u_k\omega\rangle, \ldots,
+\langle q_{k-1}^\prime, u_k\omega \rangle\vdash_M \langle q_2, \omega\rangle\]
+Таким образом, мы получаем, что переходы в наши промежуточные состояния теперь происходят ровно по одной букве. Также данное доказательство может быть легко получено построением рисунка.~$\blacksquare$
+\preposition{В условиях Предложения~\ref{oneletterway} можно считать, что завершающее состоянияе ровно одно, т. е. $|F| = 1$.}
+\newline
+$\blacktriangle$  Создадим новое состояние $Q$ и $\forall q \in F $ добавим в $\Delta$ переходы $\langle q, \varepsilon \rangle\rightarrow Q$. Очевидно, что переход по $\varepsilon$ из всех старых завершающих состояний дает нам одно новое конечное состояние $Q$.~$\blacksquare$
+\theorem{Всякий автоматный язык распознается автоматом с однобуквенными переходами.}\newline
+$\blacktriangle$ Пусть $M = \langle Q, \Sigma, \Delta, q_0, F\rangle$ - конечный автомат с однобуквенными переходами, $M^\prime = \langle Q, \Sigma, \Delta^\prime, q_0, F^\prime\rangle$,
+$L = L(M)$. Запись $\Delta(q, u)$ обозначает состояние, в которое можно придти из $q$ по $u$.
+\begin{enumerate}
+\item{$
+(\langle q_1, a \in \Sigma\rangle\rightarrow q_2) \in \Delta^\prime \Leftrightarrow\exists q_3 \in \Delta(q_1, \varepsilon) : (\langle q_3, a\rangle \rightarrow q_2) \in \Delta
+$}
+\item{$
+F^\prime = \{q^\prime | \exists q \in F: q\in \Delta(q^\prime, \varepsilon)\}
+$}
+\item{$
+\omega = q_1,\ldots, q_m \in L(M^\prime)\Leftrightarrow \langle q_0;a_1, \ldots, a_m\rangle\vdash_{M^\prime}\langle q^\prime, \varepsilon\rangle$
+$
+\Leftrightarrow \exists q_1,\ldots, q_{m-1}\in Q~ \exists q^\prime\in F^\prime: $
+\[
+\begin{pmatrix} 
+\langle q_0, a_1\rangle\rightarrow q_1\\
+\ldots\\
+\langle q_{m-2}, a_{m-1}\rangle\rightarrow q_{m-1}\\
+\langle q_{m-1}, a_m\rangle\rightarrow q^\prime
+\end{pmatrix}\in \Delta^\prime \Leftrightarrow
+\exists q_1, \ldots, q_{m-1} \exists r_1, \ldots r_{m-1}, r_m:
+\exists q^\prime \exists q\in F:
+\]
+\[
+\begin{pmatrix}
+r_1\in \Delta(q_0, \varepsilon), \langle r_1, a_1\rangle\rightarrow q_1\in\Delta\\
+r_2\in \Delta(q_1, \varepsilon), \langle r_2, a_2\rangle\rightarrow q_2\in\Delta\\
+\cdots\\
+r_m\in \Delta(q_{m-1}, \varepsilon), \langle r_m, a_m\rangle\rightarrow q^\prime\in\Delta\\
+\end{pmatrix}
+\]}
+\item{$q\in\Delta(q^\prime, \varepsilon)\Leftrightarrow \omega=a_1,\ldots, a_m\in L(M)$ $\blacksquare$}
+\end{enumerate}
+\section{Детерминированный конечный автомат}
+\definition{Детерминированный конечный автомат - ДКА: $M = \langle Q, \Sigma, \Delta, q_0, F\rangle$.}
+\begin{enumerate}
+\item{$\Delta~\subseteq~Q\times~\Sigma~\times~Q$}
+\item{$\forall q_1 \in Q \forall a \in \Sigma \left|\{q_2 ~|~ \langle q_1, a\rangle\rightarrow q_2\}\right|\leq 1$}
+\end{enumerate}
+
+\theorem{Любой автоматный язык реализуется ДКА.}
+\begin{enumerate}
+\item{$ L = L(M), M=\langle Q, \Sigma, \Delta, q_0, F\rangle - НКА с однобуквенными переходами, M^\prime = \langle 2^Q, \Sigma, \Delta^\prime, \{q_0\}, F^\prime \rangle$}
+\item{$(\langle Q_1, a\rangle\rightarrow Q_2)\in \Delta^\prime \Leftrightarrow Q_2=\{q_2~|~\exists q_1\in Q_1:\langle q_1, a\rangle\rightarrow q_2\in \Delta\}$}
+\item{$F = \{Q^\prime~|~Q^\prime\cap F\neq \varnothing\}$}
+
+\end{enumerate}
+\preposition{$\Delta^\prime(\{q_0\},\omega)=\{\Delta(q_0,\omega)\}$.}\newline
+Индукция по $|\omega|$:
+\begin{description}
+\item[База:]{$\omega = \varepsilon$, $\Delta(\{q_0\}, \varepsilon) = \{q_0\} = \Delta(q_0, \varepsilon)$}
+\item[Шаг:]{$|w|=n \Rightarrow \omega = \omega^\prime a, $ где $a \in \Sigma, |\omega^\prime| < n$}
+\[
+\Delta^\prime(\{q_0\}, \omega^\prime a) = \Delta ^\prime(\Delta^\prime(\{q_0\}, \omega^\prime), a)= \Delta^\prime(\Delta(q_0, \omega^\prime), a) =\footnote{По определению перехода $\Delta^\prime$} \Delta(\Delta(q, \omega^\prime), a) = \Delta(q_0, \omega^\prime a) 
+\]
+\[
+\omega\in L(M^\prime)\Leftrightarrow\Delta^\prime(\{q_0\}, \omega)\subseteq F^\prime \Leftrightarrow \Delta(q_0, \omega)\in F^\prime\Leftrightarrow \Delta(q_0, \omega)\cap F \neq \varnothing\Leftrightarrow \omega\in L(M)
+\]
+\end{description}
+\corollary{Любой автономный язык можно распознать за $O(n)$ времени и $O(1)$ памяти.}
+\theorem{Автоматные языки замкнуты относительно конкатенации, объединения, итерации.}\newline
+$\blacktriangle$ Пусть $L_1$ и $L_2$ произвольные языки.
+\begin{enumerate}
+\item{Создаем переход по $\varepsilon$ из завершающего состояния автомата, задающего $L_1$, в $L_2$.}
+\item{Создаем новое начальное состояние с переходами по $\varepsilon$ в начальное состояние автомата, задающего $L_1$, и в начальное состояние автомата, задающего $L_2$.}
+\item{Создаем новое начальное состояние с переходом по $\varepsilon$ в начальное состояние автомата, задающего $L_1$, и переход по $\varepsilon$ из конечного состояния автомата, задающего $L_1$, в новое начальное состояние. $\blacksquare$}
+\end{enumerate}
+\begin{thebibliography}{0}
+\bibitem{pentus}
+М.Р. Пентус, А.Е. Пентус -- Математическая теория формальных языков
+\bibitem{au} 
+А.Ахо, Д. Ульман -- Теория синтаксического анализа, перевода и компиляции
+\bibitem{aus} 
+А.Ахо, Д. Ульман, Сети - Компиляторы: принципы, построение и анализ
+\bibitem{itmo} 
+Конспекты ИТМО
+\end{thebibliography}
+\end{document}
+
+alexey.sorokin@list.ru
