@@ -1,12 +1,14 @@
-\documentclass[11pt,a4paper]{report}
+\documentclass[11pt,a4paper]{article}
 \usepackage[a4paper, left=20mm, right=20mm, top=30mm, bottom=20mm]{geometry}
+
 \usepackage{amsmath,amsfonts,amssymb,amsthm,epsfig,epstopdf,titling,url,array}
-\usepackage[T2A]{fontenc}
-\usepackage[T1]{fontenc}
+\usepackage[T2A,T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[russian]{babel}
 \usepackage{xparse}
 \usepackage[shortlabels]{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
 
 
 \theoremstyle{definition}
@@ -16,6 +18,7 @@
 \newtheorem{theorem}{Теорема}[section]
 \newtheorem{lemma}{Лемма}[section]
 \newtheorem{preposition}{Предложение}[section]
+\newtheorem{subpreposition}{Предложение}[theorem]
 \newtheorem*{corollary}{Следствие}
 
 \theoremstyle{definition}
@@ -31,7 +34,6 @@
 \maketitle
 \tableofcontents
 \newpage
-\chapter{Конечные автоматы}
 \section{Введение}
 \definition{$\Sigma = \{a_1, \ldots, a_n\}$ - алфавит.}
 \definition{$\omega\in\Sigma^*$ - слово.}
@@ -39,7 +41,8 @@
 \definition{$"\cdot"$ - конкатенация, работает для слов и для языков, $ab \cdot ca = abca$, $L_1~\cdot~L_2~=~\{w_1w_2 | w_1\in L_1, w_2 \in L_2\}$.}
 \definition{Степень языка: $L^0 = \{\varepsilon\}, L^1 = L, L^k = \underbrace{L\cdot\ldots\cdot L}_{\text{k раз}}$.}
 \definition{Замыкание Клини - $L^* = \bigcup_{k=0}^{\infty}L^k$.}
-\section{Конечный автомат}
+\section{Конечные автоматы и регулярные выражения}
+\subsection{Конечные автоматы}
 \definition{Конечный автомат - $M:= \langle Q, \Sigma, \Delta, q_0, F\rangle$.}
 \begin{enumerate}
 \item{$Q$ - конечное множество, $q \in Q$ - состояния}
@@ -52,17 +55,21 @@
 \definition{Отношение перехода $\vdash_M$ - наименьшее транзитивное рефлекисвное отношение, согласованное с операциями $(\langle q_1, u\rangle\rightarrow q)\in \Delta\implies \langle q_1, u\omega\rangle\vdash_M \langle q_2, \omega\rangle$.}
 \definition{$L(M) = \{\omega | \exists q \in F : \langle q_0, \omega\rangle \vdash_M \langle q, \varepsilon\rangle\}$ - язык, задаваемый автоматом.}
 \definition{Автоматный язык - язык, задаваемый автоматом.}
-\preposition{\label{oneletterway}Любой автоматный язык распознается автоматом с неболее чем однобуквенными переходами.}\newline
-$\blacktriangle$ Пусть $\exists u \in \Sigma^*, k:= |u|, 1 < k < \infty$ и $\exists q_1, q_2: (\langle q_1, u \rangle\rightarrow q_2)\in \Delta$. Запишем $u$ в виде $u_1\cdot\ldots\cdot u_k$, где $u_i \in \Sigma$ для $i\in\{1, \ldots, k\}$. Введем новые состояния 
+\preposition{\label{oneletterway}Любой автоматный язык распознается автоматом с неболее чем однобуквенными переходами.}
+\begin{proof}[Доказательство]
+Пусть $\exists u \in \Sigma^*, k:= |u|, 1 < k < \infty$ и $\exists q_1, q_2: (\langle q_1, u \rangle\rightarrow q_2)\in \Delta$. Запишем $u$ в виде $u_1\cdot\ldots\cdot u_k$, где $u_i \in \Sigma$ для $i\in\{1, \ldots, k\}$. Введем новые состояния 
 $q_1^\prime, \ldots, q_{k-1}^\prime$ и добавим соответствующие переходы в $\Delta$, удалив прямой переход $(\langle q_1, u \rangle\rightarrow q_2)\in \Delta$, так, чтобы:
 \[ \langle q_1, u_1\cdot\ldots\cdot u_k\omega \rangle\vdash_M \langle q_1^\prime, u_2\cdot\ldots\cdot u_k\omega\rangle, \ldots,
 \langle q_{k-1}^\prime, u_k\omega \rangle\vdash_M \langle q_2, \omega\rangle\]
-Таким образом, мы получаем, что переходы в наши промежуточные состояния теперь происходят ровно по одной букве. Также данное доказательство может быть легко получено построением рисунка.~$\blacksquare$
+Таким образом, мы получаем, что переходы в наши промежуточные состояния теперь происходят ровно по одной букве. Также данное доказательство может быть легко получено построением рисунка.
+\end{proof}
 \preposition{В условиях Предложения~\ref{oneletterway} можно считать, что завершающее состоянияе ровно одно, т. е. $|F| = 1$.}
-\newline
-$\blacktriangle$  Создадим новое состояние $Q$ и $\forall q \in F $ добавим в $\Delta$ переходы $\langle q, \varepsilon \rangle\rightarrow Q$. Очевидно, что переход по $\varepsilon$ из всех старых завершающих состояний дает нам одно новое конечное состояние $Q$.~$\blacksquare$
-\theorem{Всякий автоматный язык распознается автоматом с однобуквенными переходами.}\newline
-$\blacktriangle$ Пусть $M = \langle Q, \Sigma, \Delta, q_0, F\rangle$ - конечный автомат с однобуквенными переходами, $M^\prime = \langle Q, \Sigma, \Delta^\prime, q_0, F^\prime\rangle$,
+\begin{proof}[Доказательство]
+Создадим новое состояние $Q$ и $\forall q \in F $ добавим в $\Delta$ переходы $\langle q, \varepsilon \rangle\rightarrow Q$. Очевидно, что переход по $\varepsilon$ из всех старых завершающих состояний дает нам одно новое конечное состояние $Q$.
+\end{proof}
+\theorem{Всякий автоматный язык распознается автоматом с однобуквенными переходами.}
+\begin{proof}[Доказательство]
+Пусть $M = \langle Q, \Sigma, \Delta, q_0, F\rangle$ - конечный автомат с однобуквенными переходами, $M^\prime = \langle Q, \Sigma, \Delta^\prime, q_0, F^\prime\rangle$,
 $L = L(M)$. Запись $\Delta(q, u)$ обозначает состояние, в которое можно придти из $q$ по $u$.
 \begin{enumerate}
 \item{$
@@ -93,9 +100,10 @@ r_2\in \Delta(q_1, \varepsilon), \langle r_2, a_2\rangle\rightarrow q_2\in\Delta
 r_m\in \Delta(q_{m-1}, \varepsilon), \langle r_m, a_m\rangle\rightarrow q^\prime\in\Delta\\
 \end{pmatrix}
 \]}
-\item{$q\in\Delta(q^\prime, \varepsilon)\Leftrightarrow \omega=a_1,\ldots, a_m\in L(M)$ $\blacksquare$}
+\item{$q\in\Delta(q^\prime, \varepsilon)\Leftrightarrow \omega=a_1,\ldots, a_m\in L(M)$}
 \end{enumerate}
-\section{Детерминированный конечный автомат}
+\end{proof}
+\subsection{Детерминированные конечные автоматы}
 \definition{Детерминированный конечный автомат - ДКА: $M = \langle Q, \Sigma, \Delta, q_0, F\rangle$.}
 \begin{enumerate}
 \item{$\Delta~\subseteq~Q\times~\Sigma~\times~Q$}
@@ -103,13 +111,16 @@ r_m\in \Delta(q_{m-1}, \varepsilon), \langle r_m, a_m\rangle\rightarrow q^\prime
 \end{enumerate}
 
 \theorem{Любой автоматный язык реализуется ДКА.}
+\begin{proof}[Доказательство]
 \begin{enumerate}
 \item{$ L = L(M), M=\langle Q, \Sigma, \Delta, q_0, F\rangle - НКА с однобуквенными переходами, M^\prime = \langle 2^Q, \Sigma, \Delta^\prime, \{q_0\}, F^\prime \rangle$}
 \item{$(\langle Q_1, a\rangle\rightarrow Q_2)\in \Delta^\prime \Leftrightarrow Q_2=\{q_2~|~\exists q_1\in Q_1:\langle q_1, a\rangle\rightarrow q_2\in \Delta\}$}
 \item{$F = \{Q^\prime~|~Q^\prime\cap F\neq \varnothing\}$}
 
 \end{enumerate}
-\preposition{$\Delta^\prime(\{q_0\},\omega)=\{\Delta(q_0,\omega)\}$.}\newline
+\end{proof}
+\preposition{$\Delta^\prime(\{q_0\},\omega)=\{\Delta(q_0,\omega)\}$.}
+\begin{proof}[Доказательство]
 Индукция по $|\omega|$:
 \begin{description}
 \item[База:]{$\omega = \varepsilon$, $\Delta(\{q_0\}, \varepsilon) = \{q_0\} = \Delta(q_0, \varepsilon)$}
@@ -121,15 +132,249 @@ r_m\in \Delta(q_{m-1}, \varepsilon), \langle r_m, a_m\rangle\rightarrow q^\prime
 \omega\in L(M^\prime)\Leftrightarrow\Delta^\prime(\{q_0\}, \omega)\subseteq F^\prime \Leftrightarrow \Delta(q_0, \omega)\in F^\prime\Leftrightarrow \Delta(q_0, \omega)\cap F \neq \varnothing\Leftrightarrow \omega\in L(M)
 \]
 \end{description}
+\end{proof}
 \corollary{Любой автономный язык можно распознать за $O(n)$ времени и $O(1)$ памяти.}
-\theorem{Автоматные языки замкнуты относительно конкатенации, объединения, итерации.}\newline
-$\blacktriangle$ Пусть $L_1$ и $L_2$ произвольные языки.
+\theorem{Автоматные языки замкнуты относительно конкатенации, объединения, итерации.}
+\begin{proof}[Доказательство]
+Пусть $L_1$ и $L_2$ произвольные языки.
 \begin{enumerate}
 \item{Создаем переход по $\varepsilon$ из завершающего состояния автомата, задающего $L_1$, в $L_2$.}
 \item{Создаем новое начальное состояние с переходами по $\varepsilon$ в начальное состояние автомата, задающего $L_1$, и в начальное состояние автомата, задающего $L_2$.}
-\item{Создаем новое начальное состояние с переходом по $\varepsilon$ в начальное состояние автомата, задающего $L_1$, и переход по $\varepsilon$ из конечного состояния автомата, задающего $L_1$, в новое начальное состояние. $\blacksquare$}
+\item{Создаем новое начальное состояние с переходом по $\varepsilon$ в начальное состояние автомата, задающего $L_1$, и переход по $\varepsilon$ из конечного состояния автомата, задающего $L_1$, в новое начальное состояние.}
 \end{enumerate}
+\end{proof}
+\definition{Полный ДКА - ДКА, в котором $\forall q_1 \in Q~\forall a \in \Sigma~\exists q_2 \in Q~|~\langle q_1, a\rangle\rightarrow q_2\in \Delta$.}
+\preposition{$\forall \omega \in \Sigma^*~\exists! q\in Q: (\langle q_0, \omega\rangle \vdash \langle q, \varepsilon\rangle)$}
+\theorem{Для любого ДКА существует эквивалентный полный ДКА.}
+\begin{proof}[Доказательство]
+Очевидно по рисунку.\ \\
+\begin{tikzpicture}[shorten >=1pt, node distance=4cm,on grid,auto] 
+   \node[state, initial] (q_0){$q_0$}; 
+   \node[state] (q_1) [right=of q_0] {$q_1$}; 
+   \node[state] (q_2) [right=of q_1] {$q_2$}; 
+   \node[state] (q_3) [below=of q_1] {$q_3$}; 
+   
+    \path[->] 
+    (q_0) edge  node {$b$} (q_1)
+    (q_1) edge  node  {$a$} (q_2)
+    (q_0) edge [loop above] node {$a$} ()
+    (q_1) edge [loop above] node {$c$} ()
+    (q_2) edge [bend left] node {$b$} (q_0)
+    (q_0) edge [bend right] node {$c$} (q_3)
+    (q_2) edge [bend left] node {$a, c$} (q_3)
+    (q_3) edge [loop below] node {$a, b, c$} ()
+    
+    (q_1) edge  [bend left] node {$b$} (q_3);
+    %(q_4) edge  node  {$\varepsilon$} (q_5);;
+          
+\end{tikzpicture}
+\end{proof}
+\theorem{Автоматные языки замкнуты относительно:
+\begin{enumerate}[a)]
+\item{дополнения,}
+\item{пересечения.}
+\end{enumerate}
+}
+\begin{proof}[Доказательство]
+$
+L = L(M), M = \langle Q, \Sigma, \Delta, q_0, F\rangle - \text{ПДКА}, \overline{M} = \langle Q, \Sigma, \Delta, q_0, Q-F\rangle$.
+\begin{enumerate}[a)]
+\item{$\omega \in L(\overline{M})\Leftrightarrow\exists q \in (Q - F): (\langle q_0, \omega\rangle\vdash_{\overline{M}}\langle q, \varepsilon\rangle)\Leftrightarrow \exists q\notin F: (\langle q_0, \omega\rangle\vdash{M}\langle q, \varepsilon\rangle)\Leftrightarrow\footnote{Работает только в полном автомате (есть переходы по любому слову).}\omega\notin L(M)$}
+\item{Не совсем формальное доказательство: $L_1\cap L_2 = \overline{\overline{L_1}\cup \overline{L_2}}$.\\
+Формально:
+\begin{enumerate}[1)]
+\item{$L_1 = L(M_1), M_1 = \langle Q_1, \Sigma, \Delta_1, q_{01}, F_1\rangle$}
+\item{$L_2 = L(M_2), M_2 = \langle Q_2, \Sigma, \Delta_2, q_{02}, F_2\rangle$}
+\item{$M = \langle Q_1\times Q_2, \Sigma, \Delta, (q_{01}, q_{02}), F_1\times F_2\rangle$}
+\item{$\Delta = \{\langle (q_1, q_2), a\rangle\rightarrow(q_1^\prime, q_2^\prime)~|~((\langle q_1, a\rangle\rightarrow q_1^\prime)\in \Delta_1) \wedge((\langle q_2, a\rangle\rightarrow q_2^\prime)\in \Delta_2)\}$}
+\end{enumerate}
+\subpreposition{В новом автомате $\langle(q_1, q_2), \omega\rangle\vdash_M\langle(q_1^\prime, q_2^\prime), \varepsilon\rangle\Leftrightarrow\langle q_1,\omega\rangle\vdash_{M_1}\langle q_1^\prime, \varepsilon\rangle\wedge\langle q_2,\omega\rangle\vdash_{M_2}\langle q_2^\prime,\varepsilon\rangle.$}
+\begin{proof}[Доказательство]
+Индукция по $|\omega|$.
+\end{proof}
+}
+$\omega \in L(M)\Leftrightarrow\exists( q_1, q_2)\in F: (\langle(q_{01}, q_{02}),\omega\rangle\vdash\langle(q_1, q_2),\varepsilon\rangle)\Leftrightarrow\exists q_1\in F_1, \exists q_2\in F_2: (\langle q_{01}, \omega\rangle\vdash_{M_1}\langle q_1, \varepsilon\rangle, \langle q_{02}, \omega\rangle\vdash_{M_2}\langle q_2,\varepsilon\rangle)\Leftrightarrow\omega\in L(M_1)\wedge\omega\in L(M_2) $.
+\end{enumerate}
+\end{proof}
+\subsection{Регулярные выражения}
+\definition{$Reg(\Sigma)$ - регулярное выражение над алфавитом $\Sigma$ - наименьшее множество такое, что:
+\begin{enumerate}[1)]
+\item{$\forall a \in \Sigma: (a\in Reg(\Sigma)) $}
+\item{$0, 1 \in Reg(\Sigma)$}
+\item{$\forall \alpha, \beta \in Reg(\Sigma): (\alpha \cdot \beta)\in Reg(\Sigma) \wedge (\alpha + \beta) \in Reg(\Sigma)$}
+\item{$\forall \alpha \in Reg(\Sigma): (\alpha^* \in Reg(\Sigma))$}
+\end{enumerate}
+$L(\alpha)\subseteq \Sigma^*$ - язык, задаваемый $\alpha$.}
+\theorem{(Клини) Классы регулярных и автоматных языков совпадают.}
+\begin{proof}
+\begin{description}
+\item[Reg $\subseteq$ Aut:]{
+Индукция по построению регулярного выражения:
+\begin{description}
+\item[База:]
+{\ \\
+\begin{tikzpicture}[shorten >=1pt, node distance=2cm,on grid,auto] 
+   \node[state, initial, initial text=a:] (q_0){$q_0$}; 
+   \node[state] (q_1) [right=of q_0] {$q_1$}; 
+   \node[state,accepting](q_1) [right=of q_0] {$q_1$};
+    \path[->] 
+    (q_0) edge  node {$a$} (q_1);
+\end{tikzpicture}
+\ \\
+\begin{tikzpicture}[shorten >=1pt, node distance=2cm,on grid,auto] 
+   \node[state, initial, initial text=$1$:] (q_0){$q_0$}; 
+   \node[state,accepting](q_0) [] {$q_0$};
+    \path[->] 
+    ;
+\end{tikzpicture}
+\ \\
+\begin{tikzpicture}[shorten >=1pt, node distance=2cm,on grid,auto] 
+   \node[state, initial, initial text=$0$:] (q_0){$q_0$}; 
+    \path[->] 
+    ;
+\end{tikzpicture}
+}
+\item[Шаг:]{Следует из свойств замкнутости из прошлой лекции. }
+\end{description}
+}
+\item[Aut $\subseteq$ Reg:]{
+\definition{Регулярный автомат - автомат, метки переходов которого - регулярные выражения.}
+
+Регулярный автомат принимает слово, если оно подходит под конкатенацию регулярных выражений на каком-либо пути от начального состояния до конечного.
+\subpreposition{Всякий язык, распознаваемый регулярным автоматом, регулярен.}
+\begin{proof}[Доказательство]
+Можно считать, что:
+\begin{enumerate}
+\item{В автомате ровно одно завершающее состояние}
+\item{Между любыми двумя состояниями не более одного ребра.\ \\
+\begin{center}
+\begin{tabular}{c | c}
+{\begin{tikzpicture}[shorten >=1pt, node distance=2cm,on grid,auto] 
+   \node[state, initial] (q_0) {$q_0$};
+   \node[state] (q_1) [right=of q_0] {$q_1$}; 
+    \path[->] 
+    (q_0) edge [bend left] node {$\alpha$} (q_1)
+     (q_0) edge [bend right] node {$\beta$} (q_1);
+\end{tikzpicture}} & 
+{\begin{tikzpicture}[shorten >=1pt, node distance=3cm,on grid,auto] 
+   \node[state, initial] (q_0) {$q_0$};
+   \node[state] (q_1) [right=of q_0] {$q_1$}; 
+    \path[->] 
+    (q_0) edge node {$\alpha + \beta$} (q_1);
+\end{tikzpicture}}
+\end{tabular}
+\end{center}}
+\end{enumerate}
+Индукция по числу состояний:
+\begin{description}
+\item[База:]{
+\item{\begin{tabular}{c | c}{\begin{tikzpicture}[shorten >=1pt, node distance=2cm,on grid,auto] 
+   \node[state, initial,initial text=$\text{1 состояние:}$, accepting] (q_0) {$q_0$};
+    \path[->]
+     (q_0) edge [loop above] node {$\alpha$} ();
+\end{tikzpicture}}
+& \LARGE{$\alpha^*$} 
+\end{tabular}}
+\item{\begin{tabular}{c | c}{\begin{tikzpicture}[shorten >=1pt, node distance=2cm,on grid,auto] 
+   \node[state, initial,initial text=$\text{2 состояния:}$] (q_0) {$q_0$};
+   \node[state, accepting] (q_1) [right=of q_0] {$q_1$};
+    \path[->]
+     (q_0) edge node {$\alpha$} (q_1)
+     (q_1) edge [bend left] node {$\beta$} (q_0)
+     (q_0) edge [loop above] node {$\gamma$} ()
+     (q_1) edge [loop above] node {$\delta$} ();
+\end{tikzpicture}} & \LARGE{$(\gamma + \alpha\delta^*\beta)^*\alpha\delta^*$}\end{tabular}}
+}
+\item[Шаг:]{Уменьшим число состояний, удалив произвольное состояние, не являющееся начальным или конечным.
+\begin{description}
+\item[Было:]{
+\begin{tikzpicture}[shorten >=1pt, node distance=2cm,on grid,auto] 
+   \node[state, initial,initial text=] (q_0) {$q_0$};
+      \node[state] (q_1) [right=of q_0] {$q_1$};
+   \node[state, accepting] (q_2) [right=of q_1] {$q_2$};
+    \path[->]
+    (q_1) edge [loop below] node {$\beta$} ()
+    (q_1) edge node {$\gamma$} (q_2)
+    (q_0) edge node {$\alpha$} (q_1);
+
+\end{tikzpicture}
+}
+\item[Получим:]{
+\begin{tikzpicture}[shorten >=1pt, node distance=3cm,on grid,auto] 
+   \node[state, initial,initial text=] (q_0) {$q_0$};
+   \node[state, accepting] (q_2) [right=of q_0] {$q_2$};
+    \path[->]
+    (q_0) edge node {$\alpha\beta^*\gamma$} (q_2);
+
+\end{tikzpicture}
+}
+\end{description}
+}
+\end{description}
+Так как $q_1$ - промежуточное, то принимаемый язык не меняется.
+\end{proof}
+}
+\end{description}
+\end{proof}
+\definition{$L\subseteq \Sigma^*$, тогда $u \sim_L v\Leftrightarrow\forall \omega \in \Sigma^*:(u\omega\in L \Leftrightarrow v\omega\in L)$}
+\preposition{Пусть $M$ - ДКА, тогда $\Delta(q_0, u) = \Delta(q_0, v) \implies u\sim_L v$}
+\begin{proof}
+\[
+\forall \omega:\Delta(q_0, u\omega) = \Delta(q_0, v\omega)\implies(u\omega\in L\Leftrightarrow v\omega\in L)
+\]
+\end{proof}
+\theorem{$L$ - автомат $\Leftrightarrow$ $\left|\Sigma^*_{/{\sim_L}}\right|<\infty$}
+\begin{proof}
+\begin{description}
+\item[$\Rightarrow$]{$L = L(M), M$ - ПДКА.
+$
+\Delta(q_0, u) = \Delta(q_0, v) \Rightarrow u\sim_L v \Rightarrow \left|\Sigma^*_{\sim_L}\right| \leq \left|Q\right|<\infty
+$}
+\item[$\Leftarrow$]{Рассмотрим автомат на классах эквивалентности:
+\begin{enumerate}[1)]
+\item{$M = \langle Q, \Sigma, \Delta, q_0, F\rangle$}
+\item{$Q = \Sigma^*_{\sim_L}$}
+\item{$q_0 = [\varepsilon]$}
+\item{$F = \{[\omega]~|~\omega\in L\}$}
+\item{$\Delta = \{\langle [\omega], a\rangle\rightarrow[\omega a]~|~\omega\in\Sigma^*, a\in \Sigma\}$}
+\end{enumerate}
+\begin{description}
+\item[Корректность:]{$\omega_1\sim\omega_2 ([\omega_1]=[\omega_2])\Rightarrow \forall a\in\Sigma [\omega_1 a]=[\omega_2 a]$
+\[
+\omega_1\sim\omega_2\Leftrightarrow\forall u\in\Sigma^* (\omega_1 i\in L \Leftrightarrow\omega_2 u\in L)\Leftrightarrow \forall u^\prime\in\Sigma^* (\omega_1 a  u^\prime\in L \Leftrightarrow \omega_2 a u^\prime\in L)\Leftrightarrow \omega_1 a \sim\omega_2 a
+\]}
+\end{description}
+\subpreposition{$\Delta([u], v) = [uv]$}
+\begin{proof}
+Индукция по длине $v$:
+\begin{description}
+\item[База:]{
+\begin{enumerate}
+\item{$v=\varepsilon\Rightarrow \Delta([a],\varepsilon) = [u]=[u\varepsilon]$}
+\item{$v = a\Rightarrow\Delta([u], a) = [ua]$}
+\end{enumerate}}
+\item[Шаг:]{
+\begin{enumerate}[1)]
+\item{$v = v^\prime u$}
+\item{$\Delta([u], v^\prime a) = \Delta(\Delta([u],v^\prime), a) = \Delta([uv^\prime], a)=[uv^\prime a]=[uv]$}
+\end{enumerate}}
+\end{description}
+\end{proof}}
+\[\omega\in L \Leftrightarrow\Delta(q_0 (=[\varepsilon]),\omega)\in F \Leftrightarrow[\omega]\in F \Leftrightarrow\exists u\in L: (\omega\sim u) \Leftrightarrow\omega\in L\]
+Заметим, что если $u\in L, \omega \notin L\Rightarrow u\sim \omega.$
+
+\end{description}
+\end{proof}
+\definition{$M$ - минимальный ПДКА для $L$, если $\nexists M^\prime$ - ПДКА: $L(M^\prime)=L$ такой, что в $M^\prime$ меньшее число состояний.}
+\definition{$M$ - ДКА, $M=\langle Q,\Sigma, \Delta,q_0, F\rangle, q_1\sim q_2\Leftrightarrow\forall\omega\in\Sigma^*(\Delta(q_1,\omega)\in F\Leftrightarrow\Delta(q_2,\omega)\in~F)$}
+\preposition{Пусть $M = \langle Q,\Sigma, \Delta, q_0, F\rangle, \omega_1,\omega_2\in\Sigma^* \Delta(q_0,\omega_1)\sim\Delta(q_0,\omega_2)\Rightarrow\omega_1\sim_L\omega_2$.}
+\begin{proof}
+$\Delta(q_0,\omega_1)=q_1\sim q_2=\Delta(q_0, \omega_2): \forall u :\Delta(q_1,u)\in F\Leftrightarrow\Delta (q_2, u)\in F.$\\
+\[(\Delta(q_1, u)=\Delta(q_0, \omega_1 u) \in F\wedge \Delta(q_2, u)=\Delta(q_0,\omega_2 u)\in F)\Leftrightarrow(\omega_1 u\in L\Leftrightarrow\omega_2 u\in L)\Rightarrow \omega_1\sim\omega_2.\]
+\end{proof}
+\newpage
 \begin{thebibliography}{0}
+\addcontentsline{toc}{section}{\bibname}
 \bibitem{pentus}
 М.Р. Пентус, А.Е. Пентус -- Математическая теория формальных языков
 \bibitem{au} 
